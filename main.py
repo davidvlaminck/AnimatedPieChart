@@ -1,3 +1,5 @@
+import copy
+import datetime
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -38,26 +40,33 @@ if __name__ == '__main__':
             if cat not in summed_dict:
                 summed_dict[cat] = 0
             summed_dict[cat] += amount
-        sum_timeseries[date] = summed_dict
+        sum_timeseries[date] = copy.deepcopy(summed_dict)
 
-    colors = ['gold', 'yellowgreen', 'lightcoral', 'lightskyblue', 'limegreen',
-              'red', 'navy', 'blue', 'magenta', 'crimson']
-    explode = (0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, .01)
-    labels = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-    nums = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-
+    labels = list(summed_dict.keys())
     fig, ax = plt.subplots()
+
+    date_dates = [datetime.datetime.strptime(d, '%d/%m/%Y') for d in dates]
+
+    dates = sorted(list(date_dates))
+    dates = [d.strftime('%d/%m/%Y') for d in dates]
 
 
     def update(num):
         ax.clear()
         ax.axis('equal')
         str_num = str(num)
-        for x in range(10):
-            nums[x] += str_num.count(str(x))
-        ax.pie(nums, explode=explode, labels=labels, colors=colors,
+        dt = dates[num]
+
+        values = []
+        for label in labels:
+            if label in sum_timeseries[dt]:
+                values.append(sum_timeseries[dt][label])
+            else:
+                values.append(0)
+
+        ax.pie(values, labels=labels,
                autopct='%1.1f%%', shadow=True, startangle=140)
-        ax.set_title(str_num)
+        ax.set_title(dt)
 
 
     ani = FuncAnimation(fig, update, frames=range(100), repeat=False)
