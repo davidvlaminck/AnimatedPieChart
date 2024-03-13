@@ -1,5 +1,6 @@
 import copy
 import datetime
+from collections import OrderedDict
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -18,11 +19,9 @@ if __name__ == '__main__':
 
     data = dataset.data
 
-    timeseries = {}
-    dates = set()
+    timeseries = OrderedDict()
     for record in data:
         date = record[0]
-        dates.add(date)
         cat = record[2]
 
         amount = record[1]
@@ -34,7 +33,7 @@ if __name__ == '__main__':
 
     summed_dict = {}
     sum_timeseries = {}
-    for date in dates:
+    for date in list(timeseries.keys()):
         current_d = timeseries[date]
         for cat, amount in current_d.items():
             if cat not in summed_dict:
@@ -45,16 +44,11 @@ if __name__ == '__main__':
     labels = list(summed_dict.keys())
     fig, ax = plt.subplots()
 
-    date_dates = [datetime.datetime.strptime(d, '%d/%m/%Y') for d in dates]
-
-    dates = sorted(list(date_dates))
-    dates = [d.strftime('%d/%m/%Y') for d in dates]
-
+    dates = list(timeseries.keys())
 
     def update(num):
         ax.clear()
         ax.axis('equal')
-        str_num = str(num)
         dt = dates[num]
 
         values = []
@@ -64,10 +58,10 @@ if __name__ == '__main__':
             else:
                 values.append(0)
 
-        ax.pie(values, labels=labels,
-               autopct='%1.1f%%', shadow=True, startangle=140)
+        ax.pie(values, labels=labels, shadow=True, startangle=140)
         ax.set_title(dt)
 
 
-    ani = FuncAnimation(fig, update, frames=range(100), repeat=False)
+    ani = FuncAnimation(fig, update, frames=len(dates), repeat=False)
+    ani.save('pie_chart_2.gif', writer='imagemagick', fps=2)
     plt.show()
